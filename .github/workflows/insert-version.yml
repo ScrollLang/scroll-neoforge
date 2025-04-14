@@ -1,0 +1,57 @@
+
+name: insert version
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.INSERT_VERSION }}
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "current"
+      - name: setup jdk
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'microsoft'
+          check-latest: true
+      - name: build
+        run: gradle build
+        env:
+          PACKAGES_USER: ${{ secrets.PACKAGES_USER }}
+          PACKAGES_KEY: ${{ secrets.PACKAGES_KEY }}
+      - name: Read VERSION file
+        id: getversion
+        run: echo "version=$(cat VERSION)" >> "$GITHUB_OUTPUT"
+      - name: Check version length
+        id: check-version-length
+        run: |
+          if [ ${#version} -gt 10 ]; then
+            echo "failure=true" >> "$GITHUB_OUTPUT"
+            gh run cancel ${{ github.run_id }}
+            exit 1
+          fi
+      - name: Find and Replace
+        uses: jacobtomlinson/gha-find-replace@v3
+        with:
+          find: "INSERT VERSION"
+          replace: "${{ steps.getversion.outputs.version }}"
+          include: "src/**"
+          regex: false
+      - name: Commit changes
+        if: steps.check-version-length.outputs.failure != 'true'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        id: auto-commit-action
+        with:
+          commit_message: "Insert Version ${{ steps.getversion.outputs.version }}"

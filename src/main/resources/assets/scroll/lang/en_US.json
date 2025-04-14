@@ -1,0 +1,9 @@
+{
+  "scroll.configuration.section.configuration.toml.title": "Scroll configurations",
+  "scroll.configuration.section.configuration.toml": "Configure all Scroll settings",
+  "scroll.configuration.title": "Scroll configurations",
+  "scroll.configuration.language": "Language",
+  "scroll.configuration.language.tooltip": "Select the language file to use. The default is 'en-US'",
+  "scroll.configuration.debug": "Debug",
+  "scroll.configuration.debug.tooltip": "Print additional debug information from the parser"
+}
